@@ -18,7 +18,8 @@
   shell: 'sudo cp {{ install_dir }}/ssl/{{ registry_name }}.crt /etc/pki/ca-trust/source/anchors/ && sudo update-ca-trust'
 
 - name: Create registry pull secret
-  shell: 'sudo podman login -u {{ user }} -p {{ user_passwd }} --authfile {{ registry_pull_secret }} {{ registry_name }}:5000'
+  become: yes
+  shell: 'podman login -u {{ user }} -p {{ user_passwd }} --authfile {{ registry_pull_secret }} {{ registry_name }}:5000'
   args:
     creates: '{{ home_dir }}/pullsecret_config.json'
 

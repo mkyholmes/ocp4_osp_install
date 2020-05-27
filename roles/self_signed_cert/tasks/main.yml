@@ -2,3 +2,6 @@
 
 - name: Generate registry certificate and key
   shell: 'openssl req -newkey rsa:4096 -nodes -sha256 -keyout {{ cert_dir }}/{{ registry_name }}.key -x509 -days 365 -out {{ cert_dir }}/{{ registry_name }}.crt -subj "/C=US/ST={{ state }}/L={{ city }}/O={{ organization_name }}/OU={{ organizational_unit }}/CN={{ registry_name }}"'
+  args:
+    creates: '{{ cert_dir }}/{{ registry_name }}.key'
+    creates: '{{ cert_dir }}/{{ registry_name }}.crt'
