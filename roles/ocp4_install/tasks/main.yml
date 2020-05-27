@@ -1,0 +1,9 @@
+---
+
+- include_tasks: install_artifacts.yml
+
+- include_tasks: create_bootstrap.yml
+
+- include_tasks: create_masters.yml
+
+- include_tasks: create_workers.yml 

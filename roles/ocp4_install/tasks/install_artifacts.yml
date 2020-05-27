@@ -1,0 +1,132 @@
+---
+
+- name:  Generate install-config.yml
+  shell: cat <<EOF >/{{ install_dir }}/install-config.yaml
+apiVersion: v1
+baseDomain: {{ domain_name }}
+compute:
+- name: worker
+  hyperthreading: Enabled
+  replicas: 0
+  platform:
+    openstack:
+      type: {{ flavor }}
+controlPlane:
+  hyperthreading: Enabled
+  name: master
+  replicas: 3
+  platform:
+    openstack:
+      type: {{ flavor }}
+metadata:
+  name: {{ cluster_name }}
+networking:
+  clusterNetwork:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 23
+  machineCIDR: 192.168.47.0/24 
+  networkType: OpenShiftSDN
+  serviceNetwork:
+  - 172.30.0.0/16
+platform:
+  openstack:
+    cloud: {{ project_name }}
+    computeFlavor: {{ flavor }}
+    externalNetwork: external
+    lbFloatingIP: {{ lb_ip }}
+    octaviaSupport: "1"
+    region: ''
+    trunkSupport: "1"
+pullSecret: '`cat {{ merged_secret_path }}`'
+sshKey: "`cat .ssh/authorized_keys`"
+imageContentSources:
+- mirrors:
+  - {{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}
+  source: quay.io/openshift-release-dev/ocp-release
+- mirrors:
+  - {{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+additionalTrustBundle: |
+`awk '{printf "  %s\n", $0}' < {{ install_dir }}/ssl/{{ registry_name }}.crt`
+publish: Internal
+EOF
+
+- name: Backup install-config.yaml
+  copy:
+    src: {{ install_dir }}/install-config.yaml
+    dest: {{ install_dir }}/bak
+
+- name: Create manifests
+  shell: openshift-install create manifests --dir={{ install_dir }}
+
+- name: Set masters to unschedulable
+  lineinfile:
+    path: {{ install_dir }}/manifests/cluster-scheduler-02-config.yml
+    regexp: "^mastersSchedulable" 
+    line: "  mastersSchedulable: false"
+
+ -name: Remove the manifest that creates masters
+  file:
+    path: {{ install_dir }}/99_openshift-cluster-api_master-machines-***.yaml
+    state: absent
+
+- name: Create ignition-configs
+  shell: openshift-install create ignition-configs --dir={{ install_dir }}
+
+- name: Set environment variable for INFRA_ID
+  lineinfile:
+    path: $HOME/.bashrc
+    regexp: "^export INFRA_ID"
+    line: "export INFRA_ID=$(jq -r .infraID {{ install_dir }}/metadata.json)"
+
+- name: Update ignition-configs
+  script: update_ignition.py
+
+- name: Create master node ignition files
+  shell: for index in $(seq 0 2); do
+    MASTER_HOSTNAME="{{ INFRA_ID }}-master-$index\n"
+    python3 -c "import base64, json, sys;
+ignition = json.load(sys.stdin);
+files = ignition['storage'].get('files', []);
+files.append({'path': '/etc/hostname', 'mode': 420, 'contents': {'source': 'data:text/plain;charset=utf-8
+;base64,' + base64.standard_b64encode(b'$MASTER_HOSTNAME').decode().strip(), 'verification': {}}, 'filesy
+stem': 'root'});
+ignition['storage']['files'] = files;
+json.dump(ignition, sys.stdout)" <master.ign >"{{ INFRA_ID }}-master-$index-ignition.json"
+done
+
+- name: Copy bootstrap.ign to registry node
+  shell: scp bootstrap.ign {{ registry_node }}:
+
+- name: Change mode of bootstrap.ign
+  shell: ssh {{ registry_node }} chmod 644 bootstrap.ign
+
+- name: Move bootstrap.ign to /var/www/html
+  shell: ssh {{ registry_node }} sudo mv bootstrap.ign /var/www/html
+
+- name: Use restorecon for SELinux labeling
+  shell: ssh {{ registry_node }} sudo restorecon /var/www/html/bootstrap.ign
+
+- name: Generate file to point to bootstrap.ign on Registry node
+  shell: cat << EOF > {{ install_dir }}/{{ INFRA_ID }}-bootstrap-ignition.json
+{
+  "ignition": {
+    "config": {
+      "append": [
+        {
+          "source": "http://{{ registry_node }}/bootstrap.ign",
+          "verification": {}
+        }
+      ]
+    },
+    "security": {},
+    "timeouts": {},
+    "version": "2.2.0"
+  },
+  "networkd": {},
+  "passwd": {},
+  "storage": {},
+  "systemd": {}
+}
+EOF
+

@@ -1,0 +1,43 @@
+---
+
+- name: Create installation directory with backup and ssl 
+  become: yes
+  file:
+    path: "{{ install_dir }}/{{ item }}"
+    state: directory
+    owner: "{{ owner }}"
+    recurse: yes
+  loop:
+  - bak
+  - ssl
+
+- name: Obtain registry certificate
+  shell: 'sudo scp {{ registry_name }}:{{ registry_dir }}/certs/{{ registry_name }}.crt {{ install_dir }}/ssl/'
+
+- name: Update CA trust
+  shell: 'sudo cp {{ install_dir }}/ssl/{{ registry_name }}.crt /etc/pki/ca-trust/source/anchors/ && sudo update-ca-trust'
+
+- name: Create registry pull secret
+  become: yes
+  shell: 'sudo podman login -u {{ user }} -p {{ user_passwd }} --authfile {{ registry_pull_secret }} {{ registry_name }}:5000'
+
+- name: Merge registry pull secret with OCP pull secret
+  shell: jq -c --argjson var "$(jq .auths $HOME/pullsecret_config.json)" '.auths += $var' $HOME/ocp_pullsecret.json > merged_pullsecret.json
+
+# jq -e ".auths += {\"registry.${CLUSTER_DOMAIN}:5000\": {\"auth\": \"$(cat auth/htpasswd)\", \"email\": "env.CERT_EMAIL"}}" ${HOME}/${CLUSTER_DOMAIN}/bak/.docker/config.json | jq -c | tee .docker/config.json
+
+
+- name: Mirror the repository
+  shell: oc adm -a ${LOCAL_SECRET_JSON} release mirror \
+     --from=quay.io/${PRODUCT_REPO}/${RELEASE_NAME}:${OCP_RELEASE} \
+     --to=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY} \
+     --to-release-image=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}
+
+- name: Extract the openshift-install binary
+  shell: oc adm release extract -a {{ merged_secret_path }} --command=openshift-install "{{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}:{{ OCP_RELEASE }}-x86_64"
+
+- name: Copy openshift-install to $PATH
+  copy:
+    src: $HOME/openshift-install
+    dest: /usr/local/sbin
+

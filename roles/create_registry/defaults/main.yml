@@ -1,0 +1,11 @@
+---
+
+self_signed_cert: yes
+owner: cloud-user
+group: cloud-user
+user: openshift
+user_passwd: redhat
+registry_dir: /opt/registry
+registry_name: utilityvm.example.com
+
+auth_dir: /opt/registry/auth

@@ -1,0 +1,9 @@
+---
+
+- include: configure_bastion.yml
+
+- include: create_registry.yml
+
+- include: mirror_registry.yml
+
+- include: ocp4_install.yml

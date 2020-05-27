@@ -1,0 +1,21 @@
+---
+
+OCP_RELEASE: "{{ lookup('env','OCP_RELEASE') }}"
+LOCAL_REGISTRY: "{{ lookup('env','LOCAL_REGISTRY') }}"
+LOCAL_REPOSITORY: "{{ lookup('env','LOCAL_REPOSITORY') }}"
+PRODUCT_REPO: "{{ lookup('env','PRODUCT_REPO') }}"
+LOCAL_SECRET_JSON: "{{ lookup('env','LOCAL_SECRET_JSON') }}"
+RELEASE_NAME: "{{ lookup('env','RELEASE_NAME') }}"
+
+user: openshift
+user_passwd: redhat
+registry_dir: /opt/registry
+registry_name: utilityvm.example.com
+home_dir: /home/mradecke-redhat.com
+merged_secret_path: /home/mradecke-redhat.com/merged_pullsecret.json
+ocp_pull_secret: /home/mradecke-redhat.com/ocp_pullsecret.json
+registry_pull_secret: /home/mradecke-redhat.com/pullsecret_config.json
+
+
+install_dir: "{{ lookup('env','INSTALL_DIR') }}"
+owner: mradecke-redhat.com
