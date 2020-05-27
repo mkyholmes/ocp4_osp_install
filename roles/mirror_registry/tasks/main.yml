@@ -41,6 +41,6 @@
 
 - name: Copy openshift-install to $PATH
   copy:
-    src: $HOME/openshift-install
+    src: '{{ home_dir }}/openshift-install'
     dest: /usr/local/sbin
 
