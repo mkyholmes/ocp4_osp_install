@@ -31,7 +31,8 @@
 
 
 - name: Mirror the repository
-  shell: oc adm -a ${LOCAL_SECRET_JSON} release mirror \
+  become: yes
+  shell: oc adm -a "{{ merged_secret_path }}" release mirror \
      --from=quay.io/${PRODUCT_REPO}/${RELEASE_NAME}:${OCP_RELEASE} \
      --to=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY} \
      --to-release-image=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}
@@ -42,5 +43,6 @@
 - name: Copy openshift-install to $PATH
   copy:
     src: '{{ home_dir }}/openshift-install'
-    dest: /usr/local/sbin
+    dest: /usr/local/bin
+    mode: 0755
 

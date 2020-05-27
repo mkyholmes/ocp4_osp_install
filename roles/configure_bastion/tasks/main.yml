@@ -31,6 +31,7 @@
     src: '{{ home_dir }}/{{ item }}'
     dest: /usr/local/bin
     mode: 0755
+    owner: "{{ owner }}" 
   loop:
   - oc
   - kubectl
