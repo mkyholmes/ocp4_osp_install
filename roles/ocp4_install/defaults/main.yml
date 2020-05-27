@@ -7,14 +7,14 @@ INFRA_ID: "{{ lookup('env','INFRA_ID') }}"
 ocp_image: rhcos-ocp43
 
 domain_name: blue.osp.opentlc.com
-cluster_name: cluster-5437
-project_name: 5437-project
+cluster_name: cluster-$GUID
+project_name: $GUID-project
 bootstrap_node: "{{ INFRA_ID }}-bootstrap.example.com"
-priv_key: /home/mradecke-redhat.com/.ssh/5437key.pem
-ocp_network: 5437-ocp-network
-ocp_master_sg: 5437-master_sg
-ocp_worker_sg: 5437-worker_sg
-ocp_subnet: 5437-ocp-subnet
+priv_key: /home/mradecke-redhat.com/.ssh/$GUIDkey.pem
+ocp_network: $GUID-ocp-network
+ocp_master_sg: $GUID-master_sg
+ocp_worker_sg: $GUID-worker_sg
+ocp_subnet: $GUID-ocp-subnet
 
 lb_ip: 169.47.188.136
 

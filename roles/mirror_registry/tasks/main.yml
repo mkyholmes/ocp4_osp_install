@@ -23,7 +23,7 @@
     creates: '{{ home_dir }}/pullsecret_config.json'
 
 - name: Merge registry pull secret with OCP pull secret
-  shell: jq -c --argjson var "$(jq .auths {{ home_dir }}/pullsecret_config.json)" '.auths += $var' {{ home_dir }}/ocp_pullsecret.json > {{ home_dir }}/merged_pullsecret.json
+  shell: sudo jq -c --argjson var "$(jq .auths {{ home_dir }}/pullsecret_config.json)" '.auths += $var' {{ home_dir }}/ocp_pullsecret.json > {{ home_dir }}/merged_pullsecret.json
 
 # jq -e ".auths += {\"registry.${CLUSTER_DOMAIN}:5000\": {\"auth\": \"$(cat auth/htpasswd)\", \"email\": "env.CERT_EMAIL"}}" ${HOME}/${CLUSTER_DOMAIN}/bak/.docker/config.json | jq -c | tee .docker/config.json
 

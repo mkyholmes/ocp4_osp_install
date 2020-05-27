@@ -27,6 +27,7 @@
   shell: 'podman run -d \
 --name mirror-registry \
 -p 5000:5000 \
+--restart=always \
 -v {{ registry_dir }}/data:/var/lib/registry:z \
 -v {{ registry_dir }}/auth:/auth:z \
 -e "REGISTRY_AUTH=htpasswd" \
