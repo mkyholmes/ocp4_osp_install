@@ -29,10 +29,11 @@
 - name: Copy the kubectl and oc commands to PATH
   copy:
     src: '{{ home_dir }}/{{ item }}'
-    dest: /usr/local/sbin
+    dest: /usr/local/bin
+    mode: 0755
   loop:
   - oc
   - kubectl
 
 - name: Set up bash completion for OC client
-  shell: '{{ home_dir }}/oc completion bash | sudo tee /etc/bash_completion.d/openshift > /dev/null'
+  shell: '/usr/local/bin/oc completion bash | sudo tee /etc/bash_completion.d/openshift > /dev/null'
