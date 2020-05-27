@@ -1,14 +1,7 @@
 ---
 
-- name: Create registry directory
-  file:
-    path: /opt/registry
-    state: directory
-    owner: "{{ owner }}"
-    group: "{{ group }}"
-    recurse: yes
-
 - name: Create folders for the registry
+  become: yes
   file:
     path: '{{ registry_dir }}/{{ item }}'
     state: directory
@@ -26,7 +19,9 @@
   when: self_signed_cert | bool
 
 - name: Generate htpasswd file
-  shell: htpasswd -bBc {{ auth_dir }}/htpasswd openshift redhat
+  shell: 'htpasswd -bBc {{ auth_dir }}/htpasswd openshift redhat'
+  args:
+    creates: '{{ auth_dir }}/htpasswd'
 
 - name: Create mirror-registry
   shell: 'podman run -d \
@@ -44,6 +39,10 @@ docker.io/library/registry:2'
   register: container_result
   failed_when: "container_result.rc != 0 and 'already in use' not in container_result.stderr"
 
+- name: Start mirror-registry if running the playbook again
+  shell: 'podman start mirror-registry'
+  when: "'already in use' in container_result.stderr"
+
 - name: Change owner of certificates
   file:
     path: '{{ registry_dir }}/certs'
@@ -54,9 +53,9 @@ docker.io/library/registry:2'
   become: yes
   copy:
     src: '{{ registry_dir }}/certs/{{ registry_name }}.crt'
-    dest: /etc/pki/ca-trust/source/anchors/
+    dest: '/etc/pki/ca-trust/source/anchors/'
     remote_src: yes
 
 - name: Update CA trust
-  shell: sudo update-ca-trust
+  shell: 'sudo update-ca-trust'
 

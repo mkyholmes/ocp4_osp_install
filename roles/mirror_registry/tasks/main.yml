@@ -18,11 +18,12 @@
   shell: 'sudo cp {{ install_dir }}/ssl/{{ registry_name }}.crt /etc/pki/ca-trust/source/anchors/ && sudo update-ca-trust'
 
 - name: Create registry pull secret
-  become: yes
   shell: 'sudo podman login -u {{ user }} -p {{ user_passwd }} --authfile {{ registry_pull_secret }} {{ registry_name }}:5000'
+  args:
+    creates: '{{ home_dir }}/pullsecret_config.json'
 
 - name: Merge registry pull secret with OCP pull secret
-  shell: jq -c --argjson var "$(jq .auths $HOME/pullsecret_config.json)" '.auths += $var' $HOME/ocp_pullsecret.json > merged_pullsecret.json
+  shell: jq -c --argjson var "$(jq .auths {{ home_dir }}/pullsecret_config.json)" '.auths += $var' {{ home_dir }}/ocp_pullsecret.json > {{ home_dir }}/merged_pullsecret.json
 
 # jq -e ".auths += {\"registry.${CLUSTER_DOMAIN}:5000\": {\"auth\": \"$(cat auth/htpasswd)\", \"email\": "env.CERT_EMAIL"}}" ${HOME}/${CLUSTER_DOMAIN}/bak/.docker/config.json | jq -c | tee .docker/config.json
 

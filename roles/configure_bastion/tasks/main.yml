@@ -25,5 +25,5 @@
     dest: /usr/local/sbin/
 
 - name: Set up bash completion for OC client
-  shell: oc completion bash | sudo tee /etc/bash_completion.d/openshift > /dev/null
+  shell: 'oc completion bash | sudo tee /etc/bash_completion.d/openshift > /dev/null'
 
