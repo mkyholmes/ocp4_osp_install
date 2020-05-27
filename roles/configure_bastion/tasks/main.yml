@@ -6,7 +6,7 @@
     block: |
       export LOCAL_REGISTRY=utilityvm.example.com:5000
       export LOCAL_REPOSITORY=ocp4/openshift4
-      export LOCAL_SECRET_JSON=/home/$USER/merged_pullsecret.json
+      export LOCAL_SECRET_JSON='{{ home_dir }}/merged_pullsecret.json'
       export PRODUCT_REPO=openshift-release-dev
       export RELEASE_NAME=ocp-release
       export OCP_RELEASE=4.3.13
@@ -18,6 +18,7 @@
   get_url:
     url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ OCP_RELEASE }}/openshift-client-linux-{{ OCP_RELEASE }}.tar.gz
     dest: "{{ home_dir }}" 
+    owner: "{{ owner }}"
 
 - name: Extract OC client and move to PATH
   unarchive:
