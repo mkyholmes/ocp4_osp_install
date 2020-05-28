@@ -1,0 +1,49 @@
+---
+
+- name: Create installation directory with backup and ssl
+  file:
+    path: "{{ install_dir }}/{{ item }}"
+    state: directory
+    owner: "{{ owner }}"
+    recurse: yes
+  loop:
+  - bak
+  - ssl
+  - data
+  - mirror
+  - auth
+  - registry
+  - user-data
+
+
+- name: Download oc and kubectl
+  shell: wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ ocp_version }}/openshift-client-linux-{{ ocp_version }}.tar.gz 
+
+- name: Extract oc and kubectl to /usr/local/sbin
+  become: yes
+  shell: 'tar xzf {{ home_dir }}/openshift-client-linux-{{ ocp_version }}.tar.gz' 
+
+- name: Copy oc and kubectl to /usr/local/sbin
+  copy:
+    src: "{{ item }}"
+    dest: /usr/local/sbin
+    owner: "{{ owner }}"
+  loop:
+  - '{{ home_dir }}/kubectl'
+  - '{{ home_dir }}/oc'
+
+- name: Download openshift-install binary
+  shell: wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-install-linux.tar.gz 
+
+- name: Extract openshift-install to /usr/local/sbin
+  become: yes
+  shell: 'tar xzvf {{ home_dir }}/openshift-install-linux.tar.gz' 
+
+- name: Copy openshift-install to /usr/local/sbin
+  copy:
+    src: '{{ home_dir }}/openshift-install'
+    dest: /usr/local/sbin
+    owner: "{{ owner }}"
+
+- name: Set up bash completion for OC client
+  shell: '/usr/local/bin/oc completion bash | sudo tee /etc/bash_completion.d/openshift > /dev/null'

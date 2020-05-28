@@ -92,3 +92,5 @@
     src: '{{ install_dir }}/install-config.yaml'
     dest: '{{ install_dir }}/bak'
 
+- name: Generate manifest files
+  command: 'openshift-install create manifests --dir={{ install_dir }}'

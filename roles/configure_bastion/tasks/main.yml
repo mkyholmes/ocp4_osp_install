@@ -1,41 +1,23 @@
 ---
 
-- name: Download oc and kubectl
-  shell: wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ ocp_version }}/openshift-client-linux-{{ ocp_version }}.tar.gz 
+#- name: Create environment variables
+#  blockinfile:
+#    path: '{{ home_dir }}/.bashrc'
+#    block: |
+#      export LOCAL_REGISTRY=utilityvm.example.com:5000
+#      export LOCAL_REPOSITORY=ocp4/openshift4
+#      export LOCAL_SECRET_JSON='{{ install_dir }}/merged_pullsecret.json'
+#      export PRODUCT_REPO=openshift-release-dev
+#      export RELEASE_NAME=ocp-release
+#      export OCP_RELEASE=4.3.13
 
-- name: Extract oc and kubectl to /usr/local/sbin
-  shell: 'sudo tar xzf {{ home_dir }}/openshift-client-linux-{{ ocp_version }}.tar.gz' 
-
-- name: Copy oc and kubectl to /usr/local/sbin
-  copy:
-    src: "{{ item }}"
-    dest: /usr/local/sbin
-    owner: "{{ owner }}"
-  loop:
-  - '{{ home_dir }}/kubectl'
-  - '{{ home_dir }}/oc'
-
-- name: Download openshift-install binary
-  shell: wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-install-linux.tar.gz 
-
-- name: Extract openshift-install to /usr/local/sbin
-  shell: 'sudo tar xzvf {{ home_dir }}/openshift-install-linux.tar.gz' 
-
-- name: Copy openshift-install to /usr/local/sbin
-  copy:
-    src: '{{ home_dir }}/openshift-install'
-    dest: /usr/local/sbin
-    owner: "{{ owner }}"
-
-- name: Set up bash completion for OC client
-  shell: '/usr/local/bin/oc completion bash | sudo tee /etc/bash_completion.d/openshift > /dev/null'
+#- name: Source .bashrc
+#  shell: source {{ install_dir }}/.bashrc
 
 - name: Create installation directory with backup and ssl
-  become: yes
   file:
     path: "{{ install_dir }}/{{ item }}"
     state: directory
-    owner: "{{ owner }}"
     recurse: yes
   loop:
   - bak
@@ -45,3 +27,44 @@
   - auth
   - registry
   - user-data
+
+- name: Download OpenShift CLI
+  get_url:
+    url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ OCP_RELEASE }}/openshift-client-linux-{{ OCP_RELEASE }}.tar.gz
+    dest: "{{ install_dir }}" 
+
+- name: Extract OC client 
+  unarchive:
+    src: '{{ install_dir }}/openshift-client-linux-{{ OCP_RELEASE }}.tar.gz'
+    dest: '{{ install_dir }}'
+
+- name: Copy the kubectl and oc commands to PATH
+  copy:
+    src: '{{ install_dir }}/{{ item }}'
+    dest: /usr/local/sbin
+    mode: 0755
+  loop:
+  - oc
+  - kubectl
+
+- name: Set up bash completion for OC client
+  shell: '/usr/local/bin/oc completion bash | sudo tee /etc/bash_completion.d/openshift > /dev/null'
+
+- name: Download openshift-install binary
+  get_url:
+    url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-install-linux.tar.gz
+    dest: "{{ install_dir }}"
+
+- name: Extract openshift-install
+  unarchive:
+    src: '{{ install_dir }}/openshift-install-linux.tar.gz'
+    dest: '{{ install_dir }}'
+
+- name: Copy the openshift-install to PATH
+  copy:
+    src: '{{ install_dir }}/openshift-install'
+    dest: /usr/local/sbin
+    mode: 0755
+
+
+

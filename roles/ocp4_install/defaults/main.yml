@@ -2,7 +2,7 @@
 
 flavor: 4c16g30d
 registry_node: utilityvm.example.com
-install_dir: "{{ lookup('env','INSTALL_DIR') }}"
+install_dir: '{{ home_dir }}/openstack-upi'
 INFRA_ID: "{{ lookup('env','INFRA_ID') }}"
 GUID: "{{ lookup('env','GUID') }}"
 ocp_image: rhcos-ocp43
@@ -11,17 +11,16 @@ domain_name: blue.osp.opentlc.com
 cluster_name: 'cluster-{{ GUID }}'
 project_name: '{{ GUID }}-project'
 bootstrap_node: "{{ INFRA_ID }}-bootstrap.example.com"
-priv_key: '{{ home_dir }}/.ssh/$GUIDkey.pem'
+priv_key: '{{ home_dir }}/.ssh/{{ GUID }}key.pem'
 ocp_network: '{{ GUID }}-ocp-network'
 ocp_master_sg: '{{ GUID }}-master_sg'
 ocp_worker_sg: '{{ GUID }}-worker_sg'
 ocp_subnet: '{{ GUID }}-ocp-subnet'
 
 lb_ip: 169.47.188.136
-
-merged_secret_path: '{{ home_dir }}/merged_pullsecret.json'
-ocp_pull_secret: '{{ home_dir }}/ocp_pullsecret.json'
-registry_pull_secret: '{{ home_dir }}/pullsecret_config.json'
+merged_secret_path: '{{ install_dir }}/merged_pullsecret.json'
+ocp_pull_secret: '{{ install_dir }}/ocp_pullsecret.json'
+registry_pull_secret: '{{ install_dir }}/pullsecret_config.json'
 LOCAL_REGISTRY: utiltiyvm.example.com:5000
 LOCAL_REPOSITORY: ocp4/openshift4
 registry_name: utilityvm.example.com

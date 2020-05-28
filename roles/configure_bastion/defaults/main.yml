@@ -3,7 +3,7 @@
 
 LOCAL_REGISTRY: utilityvm.example.com:5000
 LOCAL_REPOSITORY: ocp4/openshift4
-LOCAL_SECRET_JSON: '{{ home_dir }}/merged_pullsecret.json'
+LOCAL_SECRET_JSON: '{{ install_dir }}/merged_pullsecret.json'
 PRODUCT_REPO: openshift-release-dev
 RELEASE_NAME: ocp-release
 OCP_RELEASE: 4.3.13
