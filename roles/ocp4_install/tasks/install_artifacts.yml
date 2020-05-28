@@ -1,7 +1,7 @@
 ---
 
 - name:  Generate install-config.yml
-  shell: cat <<EOF >/{{ install_dir }}/install-config.yaml
+  shell: 'cat <<EOF >{{ install_dir }}/install-config.yaml
 apiVersion: v1
 baseDomain: {{ domain_name }}
 compute:
@@ -35,7 +35,7 @@ platform:
     externalNetwork: external
     lbFloatingIP: {{ lb_ip }}
     octaviaSupport: "1"
-    region: ''
+    region: ""
     trunkSupport: "1"
 pullSecret: '`cat {{ merged_secret_path }}`'
 sshKey: "`cat .ssh/authorized_keys`"
@@ -49,7 +49,7 @@ imageContentSources:
 additionalTrustBundle: |
 `awk '{printf "  %s\n", $0}' < {{ install_dir }}/ssl/{{ registry_name }}.crt`
 publish: Internal
-EOF
+EOF'
 
 - name: Backup install-config.yaml
   copy:
