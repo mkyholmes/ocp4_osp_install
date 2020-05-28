@@ -1,11 +1,12 @@
 ---
 
-OCP_RELEASE: "{{ lookup('env','OCP_RELEASE') }}"
-LOCAL_REGISTRY: "{{ lookup('env','LOCAL_REGISTRY') }}"
-LOCAL_REPOSITORY: "{{ lookup('env','LOCAL_REPOSITORY') }}"
-PRODUCT_REPO: "{{ lookup('env','PRODUCT_REPO') }}"
-LOCAL_SECRET_JSON: "{{ lookup('env','LOCAL_SECRET_JSON') }}"
-RELEASE_NAME: "{{ lookup('env','RELEASE_NAME') }}"
+LOCAL_REGISTRY: utilityvm.example.com:5000
+LOCAL_REPOSITORY: ocp4/openshift4
+LOCAL_SECRET_JSON: '{{ merged_secret_path }}'
+PRODUCT_REPO: openshift-release-dev
+RELEASE_NAME: ocp-release
+OCP_RELEASE: 4.3.13-x86_64
+
 
 user: openshift
 user_passwd: redhat

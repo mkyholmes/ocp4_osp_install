@@ -27,22 +27,21 @@
   become: yes
   shell: jq -c --argjson var "$(jq .auths {{ home_dir }}/pullsecret_config.json)" '.auths += $var' {{ home_dir }}/ocp_pullsecret.json > {{ home_dir }}/merged_pullsecret.json
 
-# jq -e ".auths += {\"registry.${CLUSTER_DOMAIN}:5000\": {\"auth\": \"$(cat auth/htpasswd)\", \"email\": "env.CERT_EMAIL"}}" ${HOME}/${CLUSTER_DOMAIN}/bak/.docker/config.json | jq -c | tee .docker/config.json
-
-
 - name: Mirror the repository
   become: yes
-  shell: oc adm -a "{{ merged_secret_path }}" release mirror \
-     --from=quay.io/${PRODUCT_REPO}/${RELEASE_NAME}:${OCP_RELEASE} \
-     --to=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY} \
-     --to-release-image=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}
+  shell: 'oc adm -a "{{ merged_secret_path }}" release mirror \
+     --from=quay.io/{{ PRODUCT_REPO }}/{{ RELEASE_NAME }}:{{ OCP_RELEASE }} \
+     --to={{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }} \
+     --to-release-image={{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}:{{ OCP_RELEASE }}'
+  args:
+    executable: /sbin/oc
 
 - name: Extract the openshift-install binary
   shell: oc adm release extract -a {{ merged_secret_path }} --command=openshift-install "{{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}:{{ OCP_RELEASE }}-x86_64"
 
-- name: Copy openshift-install to $PATH
+- name: Copy openshift-install to PATH
   copy:
     src: '{{ home_dir }}/openshift-install'
-    dest: /usr/local/bin
+    dest: /usr/local/sbin
     mode: 0755
 
