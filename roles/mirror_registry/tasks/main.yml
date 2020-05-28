@@ -54,7 +54,7 @@
     
 - name: Copy openshift-install to PATH
   copy:
-    src: '{{ home_dir }}/openshift-install'
+    src: openshift-install
     dest: /usr/local/sbin
     mode: 0755
 
