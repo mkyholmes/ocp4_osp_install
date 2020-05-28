@@ -26,6 +26,17 @@
 - name: Merge registry pull secret with OCP pull secret
   become: yes
   shell: jq -c --argjson var "$(jq .auths {{ home_dir }}/pullsecret_config.json)" '.auths += $var' {{ home_dir }}/ocp_pullsecret.json > {{ home_dir }}/merged_pullsecret.json
+  args:
+    creates: '{{ home_dir }}/merged_pullsecret.json'
+  
+- name: Change owner for pull secrets
+  become: yes
+  file:
+    path: '{{ home_dir }}/{{ item }}'
+    owner: "{{ owner }}"
+  loop:
+  - pullsecret_config.json
+  - merged_pullsecret.json
 
 - name: Mirror the repository
   become: yes
@@ -34,11 +45,13 @@
      --to={{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }} \
      --to-release-image={{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}:{{ OCP_RELEASE }}'
   args:
-    executable: /sbin/oc
+    executable: /usr/local/sbin
 
 - name: Extract the openshift-install binary
-  shell: oc adm release extract -a {{ merged_secret_path }} --command=openshift-install "{{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}:{{ OCP_RELEASE }}-x86_64"
-
+  shell: oc adm release extract -a {{ merged_secret_path }} --command=openshift-install "{{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}:{{ OCP_RELEASE }}"
+  args:
+    executable: /usr/local/sbin
+    
 - name: Copy openshift-install to PATH
   copy:
     src: '{{ home_dir }}/openshift-install'
