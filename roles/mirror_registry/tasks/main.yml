@@ -38,23 +38,23 @@
   - pullsecret_config.json
   - merged_pullsecret.json
 
-- name: Mirror the repository
-  become: yes
-  shell: 'oc adm -a "{{ merged_secret_path }}" release mirror \
-     --from=quay.io/{{ PRODUCT_REPO }}/{{ RELEASE_NAME }}:{{ OCP_RELEASE }} \
-     --to={{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }} \
-     --to-release-image={{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}:{{ OCP_RELEASE }}'
-  args:
-    executable: /usr/local/sbin
+#- name: Mirror the repository
+#  become: yes
+#  shell: 'oc adm -a "{{ merged_secret_path }}" release mirror \
+#     --from=quay.io/{{ PRODUCT_REPO }}/{{ RELEASE_NAME }}:{{ OCP_RELEASE }} \
+#     --to={{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }} \
+#     --to-release-image={{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}:{{ OCP_RELEASE }}'
+#  args:
+#    executable: /usr/local/sbin
 
-- name: Extract the openshift-install binary
-  shell: oc adm release extract -a {{ merged_secret_path }} --command=openshift-install "{{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}:{{ OCP_RELEASE }}"
-  args:
-    executable: /usr/local/sbin
+#- name: Extract the openshift-install binary
+#  shell: oc adm release extract -a {{ merged_secret_path }} --command=openshift-install "{{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}:{{ OCP_RELEASE }}"
+#  args:
+#    executable: /usr/local/sbin
     
-- name: Copy openshift-install to PATH
-  copy:
-    src: openshift-install
-    dest: /usr/local/sbin
-    mode: 0755
+#- name: Copy openshift-install to PATH
+#  copy:
+#    src: openshift-install
+#    dest: /usr/local/sbin
+#    mode: 0755
 
