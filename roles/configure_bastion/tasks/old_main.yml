@@ -1,0 +1,40 @@
+---
+
+- name: Create environment variables
+  blockinfile:
+    path: '{{ home_dir }}/.bashrc'
+    block: |
+      export LOCAL_REGISTRY=utilityvm.example.com:5000
+      export LOCAL_REPOSITORY=ocp4/openshift4
+      export LOCAL_SECRET_JSON='{{ home_dir }}/merged_pullsecret.json'
+      export PRODUCT_REPO=openshift-release-dev
+      export RELEASE_NAME=ocp-release
+      export OCP_RELEASE=4.3.13
+
+- name: Source .bashrc
+  shell: source {{ home_dir }}/.bashrc
+
+- name: Download OpenShift CLI
+  get_url:
+    url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ OCP_RELEASE }}/openshift-client-linux-{{ OCP_RELEASE }}.tar.gz
+    dest: "{{ home_dir }}" 
+    owner: "{{ owner }}"
+
+- name: Extract OC client 
+  unarchive:
+    src: '{{ home_dir }}/openshift-client-linux-{{ OCP_RELEASE }}.tar.gz'
+    dest: '{{ home_dir }}'
+    owner: "{{ owner }}"
+
+- name: Copy the kubectl and oc commands to PATH
+  copy:
+    src: '{{ home_dir }}/{{ item }}'
+    dest: /usr/local/bin
+    mode: 0755
+    owner: "{{ owner }}" 
+  loop:
+  - oc
+  - kubectl
+
+- name: Set up bash completion for OC client
+  shell: '/usr/local/bin/oc completion bash | sudo tee /etc/bash_completion.d/openshift > /dev/null'

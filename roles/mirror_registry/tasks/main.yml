@@ -1,16 +1,5 @@
 ---
 
-- name: Create installation directory with backup and ssl 
-  become: yes
-  file:
-    path: "{{ install_dir }}/{{ item }}"
-    state: directory
-    owner: "{{ owner }}"
-    recurse: yes
-  loop:
-  - bak
-  - ssl
-
 - name: Obtain registry certificate
   shell: 'sudo scp {{ registry_name }}:{{ registry_dir }}/certs/{{ registry_name }}.crt {{ install_dir }}/ssl/'
 

@@ -1,0 +1,94 @@
+---
+
+- name:  Generate install-config.yml
+  file:
+    path: '{{ install_dir }}/install-config.yaml'
+    state: touch
+    owner: "{{ owner }}"
+    
+- name: Add contents to install-config.yml
+  blockinfile:
+    path: '{{ install_dir }}/install-config.yaml' 
+    block: |
+      apiVersion: v1
+      baseDomain: {{ domain_name }}
+      compute:
+      - name: worker
+        hyperthreading: Enabled
+       replicas: 0
+        platform:
+          openstack:
+            type: {{ flavor }}
+      controlPlane:
+        hyperthreading: Enabled
+        name: master
+        replicas: 3
+        platform:
+          openstack:
+            type: {{ flavor }}
+      metadata:
+        name: {{ cluster_name }}
+      networking:
+        clusterNetwork:
+        - cidr: 10.128.0.0/14
+          hostPrefix: 23
+        machineCIDR: 192.168.47.0/24 
+        networkType: OpenShiftSDN
+        serviceNetwork:
+        - 172.30.0.0/16
+      platform:
+        openstack:
+          cloud: {{ project_name }}
+          computeFlavor: {{ flavor }}
+          externalNetwork: external
+          lbFloatingIP: {{ lb_ip }}
+          octaviaSupport: "1"
+          region: ""
+          trunkSupport: "1"
+      pullSecret: 
+      sshKey: 
+      imageContentSources:
+      - mirrors:
+        - {{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}
+        source: quay.io/openshift-release-dev/ocp-release
+      - mirrors:
+        - {{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}
+        source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+      additionalTrustBundle: |
+
+
+- name: Get merged pull secret           
+  shell: 'cat {{ home_dir }}/merged_pullsecret.json'
+  register: pull_secret
+
+- name: Add ssh key to install-config.yaml
+  lineinfile:
+    path: '{{ install_dir }}/install-config.yaml'
+    regexp: '^pullSecret:'
+    line: 'pullSecret: "{{ pull_secret.stdout }}"'
+
+
+- name: Get ssh key 
+  shell: 'cat {{ home_dir }}/.ssh/id_rsa.pub'
+  register: ssh_key
+
+- name: Add ssh key to install-config.yaml
+  lineinfile:
+    path: '{{ install_dir }}/install-config.yaml'
+    regexp: '^sshKey:'
+    line: 'sshKey: "{{ ssh_key.stdout }}"'
+
+- name: Get registry certificate to put in install-config.yaml
+  shell: awk '{printf "  %s\n", $0}' < "{{ install_dir }}/ssl/utilityvm.example.com.crt"
+  register: registry_cert
+
+- name: Add registry cert to install-config.yaml
+  lineinfile:
+    path: '{{ install_dir }}/install-config.yaml'
+    line: "{{ registry_cert.stdout }}"
+
+- name: Backup install-config.yaml
+  copy:
+    src: '{{ install_dir }}/install-config.yaml'
+    dest: '{{ install_dir }}/bak'
+

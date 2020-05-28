@@ -1,5 +1,6 @@
 ---
 
 - hosts: bastion
+  become: yes
   roles:
   - ocp4_install

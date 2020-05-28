@@ -13,10 +13,9 @@ user_passwd: redhat
 registry_dir: /opt/registry
 registry_name: utilityvm.example.com
 home_dir: /home/mradecke-redhat.com
-merged_secret_path: /home/mradecke-redhat.com/merged_pullsecret.json
-ocp_pull_secret: /home/mradecke-redhat.com/ocp_pullsecret.json
-registry_pull_secret: /home/mradecke-redhat.com/pullsecret_config.json
-
-
 install_dir: "{{ lookup('env','INSTALL_DIR') }}"
 owner: mradecke-redhat.com
+merged_secret_path: '{{ home_dir }}/merged_pullsecret.json'
+ocp_pull_secret: '{{ home_dir }}/ocp_pullsecret.json'
+registry_pull_secret: '{{ home_dir }}/pullsecret_config.json'
+

@@ -3,11 +3,12 @@
 
 LOCAL_REGISTRY: utilityvm.example.com:5000
 LOCAL_REPOSITORY: ocp4/openshift4
-LOCAL_SECRET_JSON: /home/mradecke-redhat.com/merged_pullsecret.json
+LOCAL_SECRET_JSON: '{{ home_dir }}/merged_pullsecret.json'
 PRODUCT_REPO: openshift-release-dev
 RELEASE_NAME: ocp-release
 OCP_RELEASE: 4.3.13
 
 home_dir: /home/mradecke-redhat.com
-
+install_dir: '{{ home_dir }}/openstack-upi'
 owner: mradecke-redhat.com
+ocp_version: 4.3.13

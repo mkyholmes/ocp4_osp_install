@@ -1,55 +1,5 @@
 ---
 
-- name:  Generate install-config.yml
-  shell: 'cat <<EOF >"{{ install_dir }}/install-config.yaml"
-  apiVersion: v1
-  baseDomain: {{ domain_name }}
-  compute:
-  - name: worker
-    hyperthreading: Enabled
-    replicas: 0
-    platform:
-      openstack:
-        type: "{{ flavor }}"
-  controlPlane:
-    hyperthreading: Enabled
-    name: master
-    replicas: 3
-    platform:
-      openstack:
-        type: {{ flavor }}
-  metadata:
-    name: "{{ cluster_name }}"
-  networking:
-    clusterNetwork:
-    - cidr: 10.128.0.0/14
-      hostPrefix: 23
-    machineCIDR: 192.168.47.0/24 
-    networkType: OpenShiftSDN
-    serviceNetwork:
-    - 172.30.0.0/16
-  platform:
-    openstack:
-      cloud: "{{ project_name }}"
-      computeFlavor: "{{ flavor }}"
-      externalNetwork: external
-      lbFloatingIP: "{{ lb_ip }}"
-      octaviaSupport: "1"
-      region: ""
-      trunkSupport: "1"
-  pullSecret: "`cat {{ merged_secret_path }}`"
-  sshKey: "`cat .ssh/authorized_keys`"
-  imageContentSources:
-  - mirrors:
-    - "{{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}"
-    source: quay.io/openshift-release-dev/ocp-release
-  - mirrors:
-    - "{{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}"
-    source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
-  additionalTrustBundle: |
-  "`awk "{printf "  %s\n", $0}" < {{ install_dir }}/ssl/{{ registry_name }}.crt`"
-  EOF'
-
 - name: Backup install-config.yaml
   copy:
     src: '{{ install_dir }}/install-config.yaml'
@@ -66,7 +16,7 @@
 
  -name: Remove the manifest that creates masters
   file:
-    path: '{{ install_dir }}/99_openshift-cluster-api_master-machines-***.yaml'
+    path: '{{ install_dir }}/99_openshift-cluster-api_master-machines-*.yaml'
     state: absent
 
 - name: Create ignition-configs
