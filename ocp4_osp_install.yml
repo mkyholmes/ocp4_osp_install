@@ -1,9 +1,9 @@
 ---
 
-- include: configure_bastion.yml
+- import_playbook: configure_bastion.yml
 
-- include: create_registry.yml
+- import_playbook: create_registry.yml
 
-- include: mirror_registry.yml
+- import_playbook: mirror_registry.yml
 
-- include: ocp4_install.yml
+- import_playbook: ocp4_install.yml

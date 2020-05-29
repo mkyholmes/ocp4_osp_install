@@ -12,3 +12,4 @@ home_dir: /home/mradecke-redhat.com
 install_dir: '{{ home_dir }}/openstack-upi'
 owner: mradecke-redhat.com
 ocp_version: 4.3.13
+domain_name: example.com

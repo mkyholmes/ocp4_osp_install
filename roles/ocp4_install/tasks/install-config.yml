@@ -58,7 +58,7 @@
 
 
 - name: Get merged pull secret           
-  shell: 'cat {{ home_dir }}/merged_pullsecret.json'
+  shell: 'cat {{ install_dir }}/merged_pullsecret.json'
   register: pull_secret
 
 - name: Add ssh key to install-config.yaml
@@ -66,10 +66,10 @@
     path: '{{ install_dir }}/install-config.yaml'
     regexp: '^pullSecret:'
     line: 'pullSecret: "{{ pull_secret.stdout }}"'
-
+  when: pull_secret.changed
 
 - name: Get ssh key 
-  shell: 'cat {{ home_dir }}/.ssh/id_rsa.pub'
+  shell: 'cat {{ install_dir }}/.ssh/id_rsa.pub'
   register: ssh_key
 
 - name: Add ssh key to install-config.yaml
@@ -77,20 +77,20 @@
     path: '{{ install_dir }}/install-config.yaml'
     regexp: '^sshKey:'
     line: 'sshKey: "{{ ssh_key.stdout }}"'
+  when: ssh_key.changed
 
 - name: Get registry certificate to put in install-config.yaml
-  shell: awk '{printf "  %s\n", $0}' < "{{ install_dir }}/ssl/utilityvm.example.com.crt"
+  shell: awk '{printf "  %s\n", $0}' < "{{ install_dir }}/ssl/{{ registry_name }}.crt"
   register: registry_cert
 
 - name: Add registry cert to install-config.yaml
   lineinfile:
     path: '{{ install_dir }}/install-config.yaml'
     line: "{{ registry_cert.stdout }}"
+  when: registry_cert.changed
 
 - name: Backup install-config.yaml
   copy:
     src: '{{ install_dir }}/install-config.yaml'
     dest: '{{ install_dir }}/bak'
 
-- name: Generate manifest files
-  command: 'openshift-install create manifests --dir={{ install_dir }}'

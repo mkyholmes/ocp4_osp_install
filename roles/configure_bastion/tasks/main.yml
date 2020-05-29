@@ -27,6 +27,7 @@
   - auth
   - registry
   - user-data
+  - .ssh
 
 - name: Download OpenShift CLI
   get_url:
@@ -66,5 +67,8 @@
     dest: /usr/local/sbin
     mode: 0755
 
-
+- name: Generate ssh keys for core user
+  openssh_keypair:
+    path: '{{ install_dir }}/.ssh/id_rsa'
+    comment: 'core@{{ domain_name }}'  
 

@@ -6,7 +6,7 @@
     regexp: "^mastersSchedulable" 
     line: "  mastersSchedulable: false"
 
- -name: Remove the manifest that creates masters
+- name: Remove the manifest that creates masters
   file:
     path: '{{ install_dir }}/99_openshift-cluster-api_master-machines-*.yaml'
     state: absent

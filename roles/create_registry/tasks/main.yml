@@ -14,7 +14,7 @@
   - data
 
 - name: Create self-signed cert if necessary
-  include_role:
+  import_role:
     name: self_signed_cert
   when: self_signed_cert | bool
 
