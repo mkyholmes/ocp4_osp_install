@@ -2,7 +2,7 @@
 
 - include_tasks: install-config.yml
 
-- include_tasks: install_artifacts.yml
+- include_tasks: generate_artifacts.yml
 
 - include_tasks: create_bootstrap.yml
 
