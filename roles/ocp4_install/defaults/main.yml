@@ -9,7 +9,7 @@ ocp_image: rhcos-ocp43
 home_dir: /home/mradecke-redhat.com
 domain_name: "{{ lookup('env','OPENSHIFT_DNS_ZONE') }}"
 cluster_name: '{{ GUID }}'
-project_name: '{{ GUID }}'
+project_name: '{{ GUID }}-project'
 bootstrap_node: "{{ INFRA_ID }}-bootstrap.example.com"
 priv_key: '{{ home_dir }}/.ssh/{{ GUID }}key.pem'
 ocp_network: '{{ GUID }}-ocp-network'
