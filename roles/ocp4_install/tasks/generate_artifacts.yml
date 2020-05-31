@@ -21,7 +21,7 @@
     line: "export INFRA_ID=$(jq -r .infraID {{ install_dir }}/metadata.json)"
 
 - name: Update ignition-configs
-  script: /roles/ocp4_install/files/update_ignition.py
+  script: update_ignition.py
 
 - name: Create master node ignition files
   shell: 'for index in $(seq 0 2); do
