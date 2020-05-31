@@ -68,7 +68,7 @@
     line: "pullSecret: '{{ pull_secret.stdout }}'"
 
 - name: Get ssh key 
-  shell: awk '{printf "  %s\n", $0}' < '{{ home_dir }}/.ssh/{{ pub_key }}'
+  shell: cat '{{ home_dir }}/.ssh/{{ pub_key }}'
   register: ssh_key
 
 - name: Add ssh key to install-config.yaml
