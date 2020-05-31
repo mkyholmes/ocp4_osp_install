@@ -1,0 +1,21 @@
+---
+
+- name: Create network port for API traffic
+  shell: 'openstack port create --network "{{ ocp_network }}" --security-group "{{ ocp_master_sg }}" --fixed-ip "subnet=ocp-subnet,ip-address=192.168.47.5" --tag openshiftClusterID="{{ INFRA_ID }}" "{{ INFRA_ID }}"-api-port -f json'
+
+- name: Create network port for Ingress traffic
+  shell: 'openstack port create --network "{{ ocp_network }}" --security-group "{{ ocp_worker_sg }}" --fixed-ip "subnet={{ ocp-subnet }},ip-address=192.168.47.7" --tag openshiftClusterID="{{ INFRA_ID }}" "{{ INFRA_ID }}"-ingress-port'
+
+- name: Assign Floating IP to API port
+  shell: 'openstack floating ip set --port "{{ INFRA_ID }}-api-port" {{ API_FIP }}'
+
+- name: Assign Floating IP to Ingress port
+  shell: 'openstack floating ip set --port "{{ INFRA_ID }}-ingress-port" {{ INGRESS_FIP }}'
+
+- name: Create port for Boostrap server
+  shell: 'openstack port create --network "{{ ocp_network }}" --security-group "{{ ocp_master_sg }}" --allowed-address ip-address=192.168.47.5 --allowed-address ip-address=192.168.47.6 --allowed-address ip-address=192.168.47.7 --tag openshiftClusterID="{{ INFRA_ID }}" "{{ INFRA_ID }}-bootstrap-port"'
+
+- name: Create Bootstrap server
+  shell: 'openstack server create --image {{ ocp_image }} --flavor {{ flavor }} --user-data "{{ install_dir }}/{{ INFRA_ID }}-bootstrap-ignition.json" --port "{{ INFRA_ID }}-bootstrap-port" --wait --property openshiftClusterID="{{ INFRA_ID }}" "{{ INFRA_ID }}-bootstrap"'
+
+

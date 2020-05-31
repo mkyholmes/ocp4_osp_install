@@ -1,27 +1,25 @@
 ---
 
 - name: Create ports for worker nodes
-  shell: for index in $(seq 0 1); do
-    openstack port create \
-    --network "{{ ocp_network }}" \
-    --security-group "{{ ocp_worker_sg }}" \
-    --allowed-address ip-address=192.168.47.5 \
-    --allowed-address ip-address=192.168.47.6 \
-    --allowed-address ip-address=192.168.47.7 \
-    --tag openshiftClusterID="{{ INFRA_ID }}" \
-    "{{ INFRA_ID }}-worker-port-$index"
-done
+  shell: 'for index in $(seq 0 1); do \
+openstack port create \
+--network {{ ocp_network }} \
+--security-group {{ ocp_worker_sg }} \
+--allowed-address ip-address=192.168.47.5 \
+--allowed-address ip-address=192.168.47.6 \
+--allowed-address ip-address=192.168.47.7 \
+--tag openshiftClusterID={{ INFRA_ID }} \
+{{ INFRA_ID }}-worker-port-$index done'
 
 - name: Create worker nodes
-  shell: for index in $(seq 0 1); do
-    openstack server create \
-    --image {{ ocp_image }} \
-    --flavor {{ flavor }} \
-    --user-data "{{ install_dir }}/worker.ign" \
-    --port "{{ INFRA_ID }}-worker-port-$index" \
-    --property openshiftClusterID="{{ INFRA_ID }}" \
-    "{{ INFRA_ID }}-worker-$index"
-done
+  shell: 'for index in $(seq 0 1); do \
+openstack server create \
+--image {{ ocp_image }} \
+--flavor {{ flavor }} \
+--user-data {{ install_dir }}/worker.ign \
+--port {{ INFRA_ID }}-worker-port-$index \
+--property openshiftClusterID={{ INFRA_ID }} \
+{{ INFRA_ID }}-worker-$index done'
 
 - name: Get csr NAME for worker nodes
   shell: oc get csr | grep pending | awk 'NR>1 {{ print 1 }}'

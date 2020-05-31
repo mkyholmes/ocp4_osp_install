@@ -11,8 +11,8 @@
     path: '{{ install_dir }}/99_openshift-cluster-api_master-machines-*.yaml'
     state: absent
 
-- name: Create ignition-configs
-  shell: openshift-install create ignition-configs --dir={{ install_dir }}
+#- name: Create ignition-configs
+#  shell: openshift-install create ignition-configs --dir={{ install_dir }}
 
 - name: Set environment variable for INFRA_ID
   lineinfile:
@@ -21,7 +21,7 @@
     line: "export INFRA_ID=$(jq -r .infraID {{ install_dir }}/metadata.json)"
 
 - name: Update ignition-configs
-  script: update_ignition.py
+  script: /roles/ocp4_install/files/update_ignition.py
 
 - name: Create master node ignition files
   shell: 'for index in $(seq 0 2); do

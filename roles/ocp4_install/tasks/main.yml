@@ -1,11 +1,11 @@
 ---
 
-- include_tasks: install-config.yml
+- import_tasks: install-config.yml
 
-- include_tasks: generate_artifacts.yml
+- import_tasks: generate_artifacts.yml
 
-- include_tasks: create_bootstrap.yml
+- import_tasks: create_bootstrap.yml
 
-- include_tasks: create_masters.yml
+- import_tasks: create_masters.yml
 
-- include_tasks: create_workers.yml 
+- import_tasks: create_workers.yml 

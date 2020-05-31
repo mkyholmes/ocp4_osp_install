@@ -10,14 +10,10 @@
   register: bootkube_active
 
 - name: create network ports for masters
-  shell: for index in $(seq 0 2); do
-    openstack port create --network "{{ ocp_network }}" --security-group "{{ ocp_master_sg }}" --allowed-address ip-address=192.168.47.5 --allowed-address ip-address=192.168.47.6 --allowed-address ip-address=192.168.47.7 --tag openshiftClusterID="{{ INFRA_ID }}" "{{ INFRA_ID }}-master-port-$index"
-done
+  shell: 'for index in $(seq 0 2); do openstack port create --network "{{ ocp_network }}" --security-group "{{ ocp_master_sg }}" --allowed-address ip-address=192.168.47.5 --allowed-address ip-address=192.168.47.6 --allowed-address ip-address=192.168.47.7 --tag openshiftClusterID="{{ INFRA_ID }}" "{{ INFRA_ID }}-master-port-$index" done'
 
 - name: Create master nodes
-  shell: for index in $(seq 0 2); do
-    openstack server create --boot-from-volume 30 --image {{ ocp_image }} --flavor {{ flavor }} --user-data "{{ install_dir }}/{{ INFRA_ID }}-master-$index-ignition.json" --port "{{ INFRA_ID }}-master-port-$index" --property openshiftClusterID="{{ INFRA_ID }}" "{{ INFRA_ID }}-master-$index"
-done
+  shell: 'for index in $(seq 0 2); do openstack server create --boot-from-volume 30 --image {{ ocp_image }} --flavor {{ flavor }} --user-data "{{ install_dir }}/{{ INFRA_ID }}-master-$index-ignition.json" --port "{{ INFRA_ID }}-master-port-$index" --property openshiftClusterID="{{ INFRA_ID }}" "{{ INFRA_ID }}-master-$index" done'
   when: bootkube_active.stdout == "active"
 
 - name: Check installation and determine if bootstrap is complete
