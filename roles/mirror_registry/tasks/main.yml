@@ -14,7 +14,7 @@
 
 - name: Merge registry pull secret with OCP pull secret
   become: yes
-  shell: jq -c --argjson var "$(jq .auths {{ install_dir }}/pullsecret_config.json)" '.auths += $var' {{ install_dir }}/ocp_pullsecret.json > {{ install_dir }}/merged_pullsecret.json
+  shell: jq -c --argjson var "$(jq .auths {{ install_dir }}/pullsecret_config.json)" '.auths += $var' '{{ install_dir }}/ocp_pullsecret.json' > '{{ install_dir }}/merged_pullsecret.json'
   args:
     creates: '{{ install_dir }}/merged_pullsecret.json'
   

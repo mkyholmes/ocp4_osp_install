@@ -16,7 +16,7 @@
       - architecture: amd64
         name: worker
         hyperthreading: Enabled
-        replicas: 3
+        replicas: 0
         platform: {}
       controlPlane:
         architecture: amd64
@@ -41,12 +41,10 @@
           computeFlavor: {{ flavor }}
           externalNetwork: external
           lbFloatingIP: {{ api_fip }}
-          octaviaSupport: "0"
+          octaviaSupport: "1"
           region: ""
           trunkSupport: "1"
       publish: External
-      pullSecret: 
-      sshKey: 
       imageContentSources:
       - mirrors:
         - {{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}
@@ -54,21 +52,23 @@
       - mirrors:
         - {{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}
         source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+      pullSecret: 
+      sshKey: 
       additionalTrustBundle: |
 
 
 - name: Get merged pull secret           
-  shell: 'cat {{ install_dir }}/merged_pullsecret.json'
+  shell: cat '{{ install_dir }}/merged_pullsecret.json'
   register: pull_secret
 
 - name: Add ssh key to install-config.yaml
   lineinfile:
     path: '{{ install_dir }}/install-config.yaml'
     regexp: '^pullSecret:'
-    line: 'pullSecret: "{{ pull_secret.stdout }}"'
+    line: "pullSecret: '{{ pull_secret.stdout }}'"
 
 - name: Get ssh key 
-  shell: 'cat {{ home_dir }}/.ssh/id_rsa.pub'
+  shell: awk '{printf "  %s\n", $0}' < '{{ home_dir }}/.ssh/{{ pub_key }}'
   register: ssh_key
 
 - name: Add ssh key to install-config.yaml

@@ -25,4 +25,5 @@ LOCAL_REPOSITORY: ocp4/openshift4
 registry_name: utilityvm.example.com
 owner: mradecke-redhat.com
 api_fip: 169.62.103.167
+pub_key: "{{ GUID }}key.pub"
 
