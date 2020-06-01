@@ -1,12 +1,12 @@
 ---
 
 - name: Verify bootkube.service is running on Bootstrap node
-  shell: ssh -i {{ priv_key }} core@{{ bootstrap_node }} systemctl is-active bootkube.service
+  shell: 'ssh -i {{ priv_key }} core@{{ bootstrap_node }} systemctl is-active bootkube.service'
   register: bootkube_status
   failed_when: bootkube_status.rc == 4
 
 - name: Start bootkube.service if inactive
-  shell: ssh -i {{ priv_key }} core@{{ bootstrap_node }} systemctl start bootkube.service && systemctl is-active bootkube.service
+  shell: 'ssh -i {{ priv_key }} core@{{ bootstrap_node }} systemctl start bootkube.service && systemctl is-active bootkube.service'
   when: bootkube_status.stdout == "inactive"
   register: bootkube_active
 

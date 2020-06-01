@@ -10,8 +10,7 @@
 --network {{ ocp_network }} \
 --security-group {{ ocp_master_sg }} \
 --fixed-ip subnet={{ ocp_subnet }},ip-address=192.168.47.5 \
---tag openshiftClusterID={{ INFRA_ID }} \
-{{ INFRA_ID }}-api-port -f json'
+--tag openshiftClusterID={{ INFRA_ID }} {{ INFRA_ID }}-api-port -f json'
   when: api_port.rc == 1
 
 - name: Check to see if Ingress port exists
