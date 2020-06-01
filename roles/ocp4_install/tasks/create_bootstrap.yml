@@ -1,30 +1,58 @@
 ---
 
+- name: Check to see if API port exists
+  shell: openstack port list | grep api
+  register: api_port
+  failed_when: api_port.rc == 2
+
 - name: Create network port for API traffic
   shell: 'openstack port create \
---network "{{ ocp_network }}" \
---security-group "{{ ocp_master_sg }}" \
---fixed-ip "subnet=ocp-subnet,ip-address=192.168.47.5" \
---tag openshiftClusterID="{{ INFRA_ID }}" \
-"{{ INFRA_ID }}"-api-port -f json'
+--network {{ ocp_network }} \
+--security-group {{ ocp_master_sg }} \
+--fixed-ip subnet={{ ocp_subnet }},ip-address=192.168.47.5 \
+--tag openshiftClusterID={{ INFRA_ID }} \
+{{ INFRA_ID }}-api-port -f json'
+  when: api_port.rc == 1
+
+- name: Check to see if Ingress port exists
+  shell: openstack port list | grep ingress
+  register: ingress_port
+  failed_when: ingress_port.rc == 2
 
 - name: Create network port for Ingress traffic
   shell: 'openstack port create \
---network "{{ ocp_network }}" \
---security-group "{{ ocp_worker_sg }}" \
---fixed-ip "subnet={{ ocp-subnet }},ip-address=192.168.47.7" \
---tag openshiftClusterID="{{ INFRA_ID }}" \
-"{{ INFRA_ID }}"-ingress-port'
+--network {{ ocp_network }} \
+--security-group {{ ocp_worker_sg }} \
+--fixed-ip subnet={{ ocp_subnet }},ip-address=192.168.47.7 \
+--tag openshiftClusterID={{ INFRA_ID }} \
+{{ INFRA_ID }}-ingress-port'
+  when: ingress_port.rc == 1
 
 - name: Assign Floating IP to API port
-  shell: 'openstack floating ip set --port "{{ INFRA_ID }}-api-port" {{ API_FIP }}'
+  shell: 'openstack floating ip set --port "{{ INFRA_ID }}-api-port" {{ api_fip }}'
 
 - name: Assign Floating IP to Ingress port
-  shell: 'openstack floating ip set --port "{{ INFRA_ID }}-ingress-port" {{ INGRESS_FIP }}'
+  shell: 'openstack floating ip set --port "{{ INFRA_ID }}-ingress-port" {{ ingress_fip }}'
+
+- name: Check to see if Bootstrap port exists
+  shell: openstack port list | grep bootstrap
+  register: bootstrap_port
+  failed_when: bootstrap_port.rc == 2
 
 - name: Create port for Boostrap server
   shell: 'openstack port create --network "{{ ocp_network }}" --security-group "{{ ocp_master_sg }}" --allowed-address ip-address=192.168.47.5 --allowed-address ip-address=192.168.47.6 --allowed-address ip-address=192.168.47.7 --tag openshiftClusterID="{{ INFRA_ID }}" "{{ INFRA_ID }}-bootstrap-port"'
+  when: bootstrap_port.rc == 1
 
+- name: Check to see if there are master nodes
+  shell: openstack server list | grep master
+  register: master_node
+  failed_when: master_node.rc == 2
+
+- name: Check to see if bootstrap node exists
+  shell: openstack server list | grep bootstrap
+  register: bootstrap_node
+  failed_when: bootstrap_node.rc == 2
+ 
 - name: Create Bootstrap server
   shell: 'openstack server create --image {{ ocp_image }} --flavor {{ flavor }} --user-data "{{ install_dir }}/{{ INFRA_ID }}-bootstrap-ignition.json" --port "{{ INFRA_ID }}-bootstrap-port" --wait --property openshiftClusterID="{{ INFRA_ID }}" "{{ INFRA_ID }}-bootstrap"'
-
+  when: "master_node.rc == 1 and bootstrap_node == 1"

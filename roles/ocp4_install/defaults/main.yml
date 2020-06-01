@@ -11,7 +11,7 @@ domain_name: "{{ lookup('env','OPENSHIFT_DNS_ZONE') }}"
 cluster_name: '{{ GUID }}'
 project_name: '{{ GUID }}-project'
 bootstrap_node: "{{ INFRA_ID }}-bootstrap.example.com"
-priv_key: '{{ home_dir }}/.ssh/{{ GUID }}key.pem'
+priv_key: '{{ install_dir }}/.ssh/id_rsa'
 ocp_network: '{{ GUID }}-ocp-network'
 ocp_master_sg: '{{ GUID }}-master_sg'
 ocp_worker_sg: '{{ GUID }}-worker_sg'
@@ -25,5 +25,6 @@ LOCAL_REPOSITORY: ocp4/openshift4
 registry_name: utilityvm.example.com
 owner: mradecke-redhat.com
 api_fip: 169.62.103.167
+ingress_fip: 169.62.103.147
 pub_key: "{{ GUID }}key.pub"
-
+ocp_subnet: "{{ GUID }}-ocp-subnet"

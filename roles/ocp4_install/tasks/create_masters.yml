@@ -3,23 +3,35 @@
 - name: Verify bootkube.service is running on Bootstrap node
   shell: ssh -i {{ priv_key }} core@{{ bootstrap_node }} systemctl is-active bootkube.service
   register: bootkube_status
+  failed_when: bootkube_status.rc == 4
 
 - name: Start bootkube.service if inactive
   shell: ssh -i {{ priv_key }} core@{{ bootstrap_node }} systemctl start bootkube.service && systemctl is-active bootkube.service
   when: bootkube_status.stdout == "inactive"
   register: bootkube_active
 
+- name: Check to see if ports for masters exist
+  shell: openstack port list | grep master
+  register: master_port
+  failed_when: master_port.rc == 2
+
 - name: create network ports for masters
-  shell: 'for index in $(seq 0 2); do openstack port create --network "{{ ocp_network }}" --security-group "{{ ocp_master_sg }}" --allowed-address ip-address=192.168.47.5 --allowed-address ip-address=192.168.47.6 --allowed-address ip-address=192.168.47.7 --tag openshiftClusterID="{{ INFRA_ID }}" "{{ INFRA_ID }}-master-port-$index" done'
+  shell: 'for index in $(seq 0 2); do openstack port create --network {{ ocp_network }} --security-group {{ ocp_master_sg }} --allowed-address ip-address=192.168.47.5 --allowed-address ip-address=192.168.47.6 --allowed-address ip-address=192.168.47.7 --tag openshiftClusterID={{ INFRA_ID }} {{ INFRA_ID }}-master-port-$index; done'
+  when: master_port.rc == 1
+
+- name: Check to see if master nodes exist
+  shell: openstack server list | grep master
+  register: master_node
+  failed_when: master_node.rc == 2
 
 - name: Create master nodes
-  shell: 'for index in $(seq 0 2); do openstack server create --boot-from-volume 30 --image {{ ocp_image }} --flavor {{ flavor }} --user-data "{{ install_dir }}/{{ INFRA_ID }}-master-$index-ignition.json" --port "{{ INFRA_ID }}-master-port-$index" --property openshiftClusterID="{{ INFRA_ID }}" "{{ INFRA_ID }}-master-$index" done'
-  when: bootkube_active.stdout == "active"
+  shell: 'for index in $(seq 0 2); do openstack server create --boot-from-volume 30 --image {{ ocp_image }} --flavor {{ flavor }} --user-data {{ install_dir }}/{{ INFRA_ID }}-master-$index-ignition.json --port {{ INFRA_ID }}-master-port-$index --property openshiftClusterID={{ INFRA_ID }} {{ INFRA_ID }}-master-$index; done'
+  when: master_node.rc == 1
 
-- name: Check installation and determine if bootstrap is complete
-  shell: openshift-install wait-for bootstrap-complete --dir={{ install_dir }}
-  register: bootstrap_complete
+#- name: Check installation and determine if bootstrap is complete
+#  shell: openshift-install wait-for bootstrap-complete --dir={{ install_dir }}
+#  register: bootstrap_complete
   
-- debug: 
-    var: bootstrap_complete.stdout_lines
+#- debug: 
+#    var: bootstrap_complete.stdout_lines
 
