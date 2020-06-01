@@ -26,8 +26,11 @@
     regexp: "^export INFRA_ID"
     line: "export INFRA_ID=$(jq -r .infraID {{ install_dir }}/metadata.json)"
 
+- name: Source bashrc
+  shell: 'source {{ home_dir }}/.bashrc'
+
 - name: Check for updated ignition-configs
-  shell: jq . {{ install_dir }}/bootstrap.ign | grep dhcp
+  shell: 'jq . {{ install_dir }}/bootstrap.ign | grep dhcp'
   register: ign_config
   failed_when: ign_config.rc == 2
 
@@ -36,7 +39,7 @@
   when: ign_config.rc == 1
 
 - name: Check for updated master.ign
-  shell: ls {{ install_dir }} | grep master-0
+  shell: 'ls {{ install_dir }} | grep master-0'
   register: master_ign
   failed_when: master_ign.rc == 2
 
