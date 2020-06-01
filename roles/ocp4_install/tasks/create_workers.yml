@@ -1,5 +1,10 @@
 ---
 
+- name: Check for existing ports for worker nodes
+  shell: openstack port list | grep worker
+  register: worker_port
+  failed_when: worker_port.rc == 2
+
 - name: Create ports for worker nodes
   shell: 'for index in $(seq 0 1); do \
 openstack port create \
@@ -9,7 +14,13 @@ openstack port create \
 --allowed-address ip-address=192.168.47.6 \
 --allowed-address ip-address=192.168.47.7 \
 --tag openshiftClusterID={{ INFRA_ID }} \
-{{ INFRA_ID }}-worker-port-$index done'
+{{ INFRA_ID }}-worker-port-$index; done'
+  when: worker_port.rc == 1
+
+- name: Check for existing worker nodes
+  shell: openstack server list | grep worker
+  register: worker_node
+  failed_when: worker_node.rc == 2
 
 - name: Create worker nodes
   shell: 'for index in $(seq 0 1); do \
@@ -19,12 +30,17 @@ openstack server create \
 --user-data {{ install_dir }}/worker.ign \
 --port {{ INFRA_ID }}-worker-port-$index \
 --property openshiftClusterID={{ INFRA_ID }} \
-{{ INFRA_ID }}-worker-$index done'
+{{ INFRA_ID }}-worker-$index; done'
+  when: worker_node.rc == 1
 
 - name: Get csr NAME for worker nodes
-  shell: oc get csr | grep pending | awk 'NR>1 {{ print 1 }}'
+  shell: oc get csr | grep pending 
   register: worker_csr
 
+- name: Remove first row of csr table
+  shell: "awk 'NR>1 {{ print 1 }}' < {{ worker_csr.stdout_lines }}"
+  register: csr_info
+
 - name: Approve worker node csr to join cluster
-  shell: oc adm certificate approve "{{ item }}"
-  loop: "{{ worker_csr.stdout_lines }}"
+  shell: 'oc adm certificate approve "{{ item }}"'
+  loop: "{{ csr_info.stdout_lines }}"

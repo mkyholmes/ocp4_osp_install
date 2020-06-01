@@ -1,10 +1,16 @@
 ---
 
+- name: Check to see if masters are schedulable
+  shell: 'cat {{ install_dir }}/manifests/cluster-scheduler-02-config.yml | grep "mastersSchedulable: false"'
+  register: masters_schedule
+  failed_when: masters_schedule.rc == 2
+
 - name: Set masters to unschedulable
   lineinfile:
     path: '{{ install_dir }}/manifests/cluster-scheduler-02-config.yml'
     regexp: "^mastersSchedulable" 
     line: "  mastersSchedulable: false"
+  when: masters_schedule.rc == 1
 
 - name: Remove the manifest that creates masters
   file:
@@ -20,11 +26,23 @@
     regexp: "^export INFRA_ID"
     line: "export INFRA_ID=$(jq -r .infraID {{ install_dir }}/metadata.json)"
 
+- name: Check for updated ignition-configs
+  shell: jq . {{ install_dir }}/bootstrap.ign | grep dhcp
+  register: ign_config
+  failed_when: ign_config.rc == 2
+
 - name: Update ignition-configs
   script: update_ignition.py
+  when: ign_config.rc == 1
+
+- name: Check for updated master.ign
+  shell: ls {{ install_dir }} | grep master-0
+  register: master_ign
+  failed_when: master_ign.rc == 2
 
 - name: Create master node ignition files
   script: master_ignition.sh
+  when: master_ign.rc == 1
 
 - name: Copy bootstrap.ign to registry node
   shell: 'scp {{ install_dir }}/bootstrap.ign {{ registry_node }}:'
@@ -38,5 +56,11 @@
 - name: Use restorecon for SELinux labeling
   shell: 'ssh {{ registry_node }} sudo restorecon /var/www/html/bootstrap.ign'
 
+- name: Check for updated bootstrap.ig
+  shell: 'ls {{ install_dir }} | grep {{ INFRA_ID }}-bootstrap'
+  register: new_bootstrap
+  failed_when: new_bootstrap.rc == 2
+
 - name: Generate file to point to bootstrap.ign on Registry node
   script: new_bootstrap_ign.sh
+  when: new_bootstrap.rc == 1

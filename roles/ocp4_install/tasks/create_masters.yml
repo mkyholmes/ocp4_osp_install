@@ -16,7 +16,13 @@
   failed_when: master_port.rc == 2
 
 - name: create network ports for masters
-  shell: 'for index in $(seq 0 2); do openstack port create --network {{ ocp_network }} --security-group {{ ocp_master_sg }} --allowed-address ip-address=192.168.47.5 --allowed-address ip-address=192.168.47.6 --allowed-address ip-address=192.168.47.7 --tag openshiftClusterID={{ INFRA_ID }} {{ INFRA_ID }}-master-port-$index; done'
+  shell: 'for index in $(seq 0 2); do openstack port create \
+--network {{ ocp_network }} \
+--security-group {{ ocp_master_sg }} \
+--allowed-address ip-address=192.168.47.5 \
+--allowed-address ip-address=192.168.47.6 \
+--allowed-address ip-address=192.168.47.7 \
+--tag openshiftClusterID={{ INFRA_ID }} {{ INFRA_ID }}-master-port-$index; done'
   when: master_port.rc == 1
 
 - name: Check to see if master nodes exist
@@ -25,7 +31,13 @@
   failed_when: master_node.rc == 2
 
 - name: Create master nodes
-  shell: 'for index in $(seq 0 2); do openstack server create --boot-from-volume 30 --image {{ ocp_image }} --flavor {{ flavor }} --user-data {{ install_dir }}/{{ INFRA_ID }}-master-$index-ignition.json --port {{ INFRA_ID }}-master-port-$index --property openshiftClusterID={{ INFRA_ID }} {{ INFRA_ID }}-master-$index; done'
+  shell: 'for index in $(seq 0 2); do openstack server create \
+--boot-from-volume 30 \
+--image {{ ocp_image }} \
+--flavor {{ flavor }} \
+--user-data {{ install_dir }}/{{ INFRA_ID }}-master-$index-ignition.json \
+--port {{ INFRA_ID }}-master-port-$index \
+--property openshiftClusterID={{ INFRA_ID }} {{ INFRA_ID }}-master-$index; done'
   when: master_node.rc == 1
 
 #- name: Check installation and determine if bootstrap is complete
@@ -35,3 +47,11 @@
 #- debug: 
 #    var: bootstrap_complete.stdout_lines
 
+- name: Set kubeconfig credentials for cluster
+  lineinfile:
+    path: '{{ home_dir }}/.bashrc'
+    regexp: '^export KUBECONFIG'
+    line: 'export KUBECONFIG={{ install_dir }}/auth/kubeconfig'
+
+- name: Source environment variable for kubeconfig
+  shell: 'source {{ home_dir }}/.bashrc'
