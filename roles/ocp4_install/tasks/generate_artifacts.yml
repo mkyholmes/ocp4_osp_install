@@ -59,11 +59,17 @@
 - name: Use restorecon for SELinux labeling
   shell: 'ssh {{ registry_node }} sudo restorecon /var/www/html/bootstrap.ign'
 
-- name: Check for updated bootstrap.ig
+- name: Check for updated bootstrap.ign
   shell: 'ls {{ install_dir }} | grep {{ INFRA_ID }}-bootstrap'
   register: new_bootstrap
   failed_when: new_bootstrap.rc == 2
 
+- name: Verify bootstrap.ign on registry is accessible
+  get_url:
+    url: 'http://{{ registry_name }}/bootstrap.ign'
+    dest: '{{ home_dir }}/mybootstrap.ign'
+  register: got_bootstrap
+
 - name: Generate file to point to bootstrap.ign on Registry node
   script: new_bootstrap_ign.sh
-  when: new_bootstrap.rc == 1
+  when: 'new_bootstrap.rc == 1 and got_bootstrap.rc == 0'
