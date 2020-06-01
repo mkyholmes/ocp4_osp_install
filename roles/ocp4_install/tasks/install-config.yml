@@ -61,25 +61,42 @@
   shell: cat '{{ install_dir }}/merged_pullsecret.json'
   register: pull_secret
 
+- name: Check for pull secret in install-config.yaml
+  shell: 'cat {{ install_dir }}/install-config.yaml | grep auths'
+  register: pullsecret
+  failed_when: pullsecret.rc == 2
+
 - name: Add ssh key to install-config.yaml
   lineinfile:
     path: '{{ install_dir }}/install-config.yaml'
     regexp: '^pullSecret:'
     line: "pullSecret: '{{ pull_secret.stdout }}'"
+  when: pullsecret.rc == 1
 
 - name: Get ssh key 
   shell: cat '{{ home_dir }}/.ssh/{{ pub_key }}'
   register: ssh_key
+
+- name: Check for ssh key in install-config.yaml
+  shell: 'cat {{ install_dir }}/install-config.yaml | grep ssh-rsa'
+  register: ssh_result
+  failed_when: ssh_result.rc == 2
 
 - name: Add ssh key to install-config.yaml
   lineinfile:
     path: '{{ install_dir }}/install-config.yaml'
     regexp: '^sshKey:'
     line: 'sshKey: "{{ ssh_key.stdout }}"'
+  when: ssh_result.rc == 1
 
 - name: Get registry certificate to put in install-config.yaml
   shell: awk '{printf "  %s\n", $0}' < "{{ install_dir }}/ssl/{{ registry_name }}.crt"
   register: registry_cert
+
+- name: Check for certificate in install-config.yml
+  shell: 'cat {{ install_dir }}/install-config.yaml | grep BEGIN'
+  register: cert_result
+  failed_when: cert_result.rc == 2
 
 - name: Add registry cert to install-config.yaml
   lineinfile:
@@ -87,6 +104,7 @@
     regexp: '^additionalTrustBundle: |'
     insertafter: '^additionalTrustBundle: |'
     line: "{{ registry_cert.stdout }}"
+  when: cert_result.rc == 1
     
 - name: Backup install-config.yaml
   copy:
