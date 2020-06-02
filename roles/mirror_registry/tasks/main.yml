@@ -14,7 +14,7 @@
 
 - name: Merge registry pull secret with OCP pull secret
   become: yes
-  shell: jq -c --argjson var "$(jq .auths {{ install_dir }}/pullsecret_config.json)" '.auths += $var' '{{ install_dir }}/ocp_pullsecret.json' > '{{ install_dir }}/merged_pullsecret.json'
+  shell: jq -c --argjson var "$(jq .auths {{ install_dir }}/pullsecret_config.json)" '.auths += $var' '{{ home_dir }}/ocp_pullsecret.json' > '{{ install_dir }}/merged_pullsecret.json'
   args:
     creates: '{{ install_dir }}/merged_pullsecret.json'
   
@@ -28,22 +28,14 @@
   - merged_pullsecret.json
 
 #- name: Mirror the repository
-#  become: yes
-#  shell: 'oc adm -a "{{ merged_secret_path }}" release mirror \
+#   block:
+#    - name: Run oc command to mirror repository
+#      shell: 'oc adm release -a "{{ merged_secret_path }}" mirror \
 #     --from=quay.io/{{ PRODUCT_REPO }}/{{ RELEASE_NAME }}:{{ OCP_RELEASE }} \
 #     --to={{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }} \
 #     --to-release-image={{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}:{{ OCP_RELEASE }}'
-#  args:
-#    executable: /usr/local/sbin
-
-#- name: Extract the openshift-install binary
-#  shell: oc adm release extract -a {{ merged_secret_path }} --command=openshift-install "{{ LOCAL_REGISTRY }}/{{ LOCAL_REPOSITORY }}:{{ OCP_RELEASE }}"
-#  args:
-#    executable: /usr/local/sbin
-    
-#- name: Copy openshift-install to PATH
-#  copy:
-#    src: openshift-install
-#    dest: /usr/local/sbin
-#    mode: 0755
-
+#      args:
+#        executable: /usr/local/sbin/oc
+#  rescue:
+#    - name: Run bash script to execute above command
+#      shell: '{{ home_dir }}/ocp4_osp_install/mirror_repo.sh'

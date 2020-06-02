@@ -1,24 +1,26 @@
 ---
 
-#- name: Create environment variables
-#  blockinfile:
-#    path: '{{ home_dir }}/.bashrc'
-#    block: |
-#      export LOCAL_REGISTRY=utilityvm.example.com:5000
-#      export LOCAL_REPOSITORY=ocp4/openshift4
-#      export LOCAL_SECRET_JSON='{{ install_dir }}/merged_pullsecret.json'
-#      export PRODUCT_REPO=openshift-release-dev
-#      export RELEASE_NAME=ocp-release
-#      export OCP_RELEASE=4.3.13
+- name: Create environment variables
+  blockinfile:
+    path: '{{ home_dir }}/.bashrc'
+    block: |
+      export LOCAL_REGISTRY=utilityvm.example.com:5000
+      export LOCAL_REPOSITORY=ocp4/openshift4
+      export LOCAL_SECRET_JSON='{{ install_dir }}/merged_pullsecret.json'
+      export PRODUCT_REPO=openshift-release-dev
+      export RELEASE_NAME=ocp-release
+      export OCP_RELEASE=4.3.13
+      export INSTALL_DIR=$HOME/openstack-upi
 
-#- name: Source .bashrc
-#  shell: source {{ install_dir }}/.bashrc
+- name: Source .bashrc
+  shell: 'source {{ home_dir }}/.bashrc'
 
 - name: Create installation directory with backup and ssl
   file:
     path: "{{ install_dir }}/{{ item }}"
     state: directory
     recurse: yes
+    owner: "{{ owner }}"
   loop:
   - bak
   - ssl

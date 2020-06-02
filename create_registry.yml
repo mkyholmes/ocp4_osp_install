@@ -1,5 +1,6 @@
 ---
 
 - hosts: registry
+  remote_user: cloud-user
   roles:
   - create_registry

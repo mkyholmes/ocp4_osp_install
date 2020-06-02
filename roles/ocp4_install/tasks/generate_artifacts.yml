@@ -1,16 +1,10 @@
 ---
 
-- name: Check to see if masters are schedulable
-  shell: 'cat {{ install_dir }}/manifests/cluster-scheduler-02-config.yml | grep "mastersSchedulable: false"'
-  register: masters_schedule
-  failed_when: masters_schedule.rc == 2
-
 - name: Set masters to unschedulable
   lineinfile:
     path: '{{ install_dir }}/manifests/cluster-scheduler-02-config.yml'
-    regexp: "^mastersSchedulable" 
+    regexp: "^mastersSchedulable:" 
     line: "  mastersSchedulable: false"
-  when: masters_schedule.rc == 1
 
 - name: Remove the manifest that creates masters
   file:
@@ -18,7 +12,12 @@
     state: absent
 
 #- name: Create ignition-configs
-#  shell: openshift-install create ignition-configs --dir={{ install_dir }}
+#  block:
+#    - name: Run openshift-install command 
+#      shell: 'openshift-install create ignition-configs --dir={{ install_dir }}'
+#  rescue:
+#    - name: Run bash script to execute the above command
+#      script: ignition-configs.sh
 
 - name: Set environment variable for INFRA_ID
   lineinfile:
@@ -60,7 +59,7 @@
   shell: 'ssh {{ registry_node }} sudo restorecon /var/www/html/bootstrap.ign'
 
 - name: Check for updated bootstrap.ign
-  shell: 'ls {{ install_dir }} | grep {{ INFRA_ID }}-bootstrap'
+  shell: 'ls {{ install_dir }} | grep "{{ INFRA_ID }}-bootstrap"'
   register: new_bootstrap
   failed_when: new_bootstrap.rc == 2
 
@@ -68,6 +67,9 @@
   get_url:
     url: 'http://{{ registry_name }}/bootstrap.ign'
     dest: '{{ home_dir }}/mybootstrap.ign'
+  
+- name: Verify mybootstrap.ign
+  shell: 'ls {{ home_dir }} | grep mybootstrap'
   register: got_bootstrap
 
 - name: Generate file to point to bootstrap.ign on Registry node

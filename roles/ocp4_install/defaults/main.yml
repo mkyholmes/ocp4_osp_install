@@ -24,7 +24,7 @@ LOCAL_REGISTRY: utiltiyvm.example.com:5000
 LOCAL_REPOSITORY: ocp4/openshift4
 registry_name: utilityvm.example.com
 owner: mradecke-redhat.com
-api_fip: 169.62.103.167
-ingress_fip: 169.62.103.147
+api_fip: "{{ lookup('env','API_FIP') }}"
+ingress_fip: "{{ lookup('env','INGRESS_FIP') }}"
 pub_key: "{{ GUID }}key.pub"
 ocp_subnet: "{{ GUID }}-ocp-subnet"

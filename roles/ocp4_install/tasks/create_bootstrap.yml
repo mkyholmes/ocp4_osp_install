@@ -38,14 +38,9 @@
   register: bootstrap_port
   failed_when: bootstrap_port.rc == 2
 
-- name: Create port for Boostrap server
+- name: Create port for Boostrap port
   shell: 'openstack port create --network "{{ ocp_network }}" --security-group "{{ ocp_master_sg }}" --allowed-address ip-address=192.168.47.5 --allowed-address ip-address=192.168.47.6 --allowed-address ip-address=192.168.47.7 --tag openshiftClusterID="{{ INFRA_ID }}" "{{ INFRA_ID }}-bootstrap-port"'
   when: bootstrap_port.rc == 1
-
-- name: Check to see if there are master nodes
-  shell: openstack server list | grep master
-  register: master_node
-  failed_when: master_node.rc == 2
 
 - name: Check to see if bootstrap node exists
   shell: openstack server list | grep bootstrap
@@ -54,4 +49,4 @@
  
 - name: Create Bootstrap server
   shell: 'openstack server create --image {{ ocp_image }} --flavor {{ flavor }} --user-data "{{ install_dir }}/{{ INFRA_ID }}-bootstrap-ignition.json" --port "{{ INFRA_ID }}-bootstrap-port" --wait --property openshiftClusterID="{{ INFRA_ID }}" "{{ INFRA_ID }}-bootstrap"'
-  when: "master_node.rc == 1 and bootstrap_node == 1"
+  when: bootstrap_node.rc == 1

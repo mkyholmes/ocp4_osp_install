@@ -4,7 +4,7 @@ import base64
 import json
 import os
 
-with open('/home/mradecke-redhat.com/openstack-upi/bootstrap.ign', 'r') as f:
+with open('$INSTALL_DIR/bootstrap.ign', 'r') as f:
     ignition = json.load(f)
 
 files = ignition['storage'].get('files', [])

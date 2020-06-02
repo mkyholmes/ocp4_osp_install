@@ -94,7 +94,7 @@
   register: registry_cert
 
 - name: Check for certificate in install-config.yml
-  shell: 'cat {{ install_dir }}/install-config.yaml | grep BEGIN'
+  shell: 'cat {{ install_dir }}/install-config.yaml | grep CERTIFICATE'
   register: cert_result
   failed_when: cert_result.rc == 2
 

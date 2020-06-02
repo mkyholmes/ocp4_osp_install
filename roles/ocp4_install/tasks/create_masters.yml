@@ -41,11 +41,16 @@
   when: master_node.rc == 1
 
 #- name: Check installation and determine if bootstrap is complete
-#  shell: openshift-install wait-for bootstrap-complete --dir={{ install_dir }}
-#  register: bootstrap_complete
+#  block:
+#    - name: Run openshift-install command to check completion
+#      shell: openshift-install wait-for bootstrap-complete --dir={{ install_dir }}
+#      register: bootstrap_complete
   
-#- debug: 
-#    var: bootstrap_complete.stdout_lines
+#    - debug: 
+#        var: bootstrap_complete.stdout_lines
+#  rescue:
+#    - name: Run bash script to check completion
+#      script: bootstrap_complete.sh
 
 - name: Set kubeconfig credentials for cluster
   lineinfile:
